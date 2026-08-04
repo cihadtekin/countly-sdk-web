@@ -12,3 +12,6 @@ generateDocs.sh
 jsdoc_conf.json
 LICENSE
 cypress/
+plugin/session-replay/rrweb.min.js
+
+plugin/session-replay/countly_session_replay.min.js

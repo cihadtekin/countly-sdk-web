@@ -340,6 +340,48 @@ declare module "countly-sdk-web" {
     function track_errors(segments?: Object): void;
 
     /**
+     * Start recording the page with rrweb (Session Replay plugin) and keep a rolling
+     * in-memory window of the most recent activity. Idempotent. Requires the Session
+     * Replay plugin (plugin/session-replay) and rrweb to be loaded.
+     * @param {Object} [options] - capture overrides
+     * @param {number} [options.rollingWindowMs=30000] - rolling window length in ms
+     * @param {number} [options.maxEvents=10000] - hard cap on buffered events
+     * @param {boolean} [options.maskAllInputs=true] - mask all input values
+     * @param {string} [options.blockSelector] - selector for blocked elements
+     * @param {string} [options.maskTextSelector] - selector for masked text
+     * @param {string} [options.ignoreSelector] - selector for ignored interactions
+     * @param {Object} [options.sampling] - rrweb sampling options
+     * @param {boolean} [options.autoSendOnCrash=true] - auto-send the current rolling
+     *   window when a crash/error is recorded, tagging crash and recording with one id
+     */
+    function startSessionRecording(options?: {
+      rollingWindowMs?: number;
+      maxEvents?: number;
+      maskAllInputs?: boolean;
+      blockSelector?: string;
+      maskTextSelector?: string;
+      ignoreSelector?: string;
+      sampling?: Object;
+      autoSendOnCrash?: boolean;
+    }): void;
+
+    /**
+     * Package the current rolling window and enqueue it for delivery to the server.
+     * Does not stop recording. (Session Replay plugin.)
+     */
+    function sendSessionRecording(): void;
+
+    /**
+     * Stop recording and clear the buffer. (Session Replay plugin.)
+     */
+    function stopSessionRecording(): void;
+
+    /**
+     * Whether a recording is currently running. (Session Replay plugin.)
+     */
+    function isSessionRecording(): boolean;
+
+    /**
      * Log an exception that you caught through try and catch block and handled yourself and just want to report it to server
      * @param {Object} err - error exception object provided in catch block
      * @param {Object} [segments] - additional key-value pairs you want to provide with error report, like versions of libraries used, etc.

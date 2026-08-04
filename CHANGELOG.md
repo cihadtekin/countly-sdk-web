@@ -1,3 +1,7 @@
+## Unreleased
+
+- Added Session Replay plugin (opt-in, rrweb based): `startSessionRecording`, `sendSessionRecording`, `stopSessionRecording`, `isSessionRecording`. Records the page DOM on-device with a configurable rolling window (30s default), masks inputs/text and strips URL query strings before buffering, and ships gzip-compressed windows to the server on demand. New `session-replay` consent feature. Supports `autoSendOnCrash` (default true): a crash auto-ships the current window, tagging both the crash and the recording with a shared correlation id.
+
 ## 26.1.2
 
 - Delayed remote config refresh after merged device ID changes to reduce request ordering races.
