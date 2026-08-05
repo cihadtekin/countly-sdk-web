@@ -426,7 +426,8 @@ Privacy is applied at capture time (before anything is buffered):
             recording: true,
             config: config,
             buffer: [],
-            stopFn: null
+            stopFn: null,
+            snapshotTimer: null
         };
         recorders[appKey] = state;
 
@@ -450,6 +451,28 @@ Privacy is applied at capture time (before anything is buffered):
         });
 
         state.stopFn = stop || null;
+
+        // Keep the rolling window actually rolling. rrweb's checkoutEveryNms only
+        // takes a fresh full snapshot when an event fires, so on an idle page no
+        // snapshot is taken and trimRollingBuffer stays anchored to the initial
+        // snapshot — the buffer then spans the whole session instead of the last
+        // `rollingWindowMs`. A forced snapshot on a timer guarantees a recent
+        // anchor regardless of activity, bounding a sent recording to roughly
+        // `rollingWindowMs` + this interval.
+        var snapshotInterval = Math.max(5000, Math.floor(config.rollingWindowMs / 2));
+        state.snapshotTimer = setInterval(function() {
+            if (!state.recording) {
+                return;
+            }
+            try {
+                if (rrweb && rrweb.record && typeof rrweb.record.takeFullSnapshot === "function") {
+                    rrweb.record.takeFullSnapshot(true);
+                }
+            }
+            catch (e) {
+                // ignore (e.g. recording not active yet)
+            }
+        }, snapshotInterval);
 
         if (config.autoSendOnCrash) {
             installCrashHook(self, state);
@@ -495,6 +518,10 @@ Privacy is applied at capture time (before anything is buffered):
             catch (e) {
                 log("[ERROR]", "stopSessionRecording, error stopping rrweb: " + e);
             }
+        }
+        if (state.snapshotTimer) {
+            clearInterval(state.snapshotTimer);
+            state.snapshotTimer = null;
         }
         removeCrashHook(state);
         state.recording = false;
