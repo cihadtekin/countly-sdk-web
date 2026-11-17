@@ -15,7 +15,8 @@
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "test": "cypress run",
-    "test:consumers": "npm --prefix test/consumers test"
+    "test:consumers": "npm --prefix test/consumers test",
+    "build:rrweb": "node plugin/rrweb/build.mjs"
   },
   "repository": {
     "type": "git",
@@ -33,9 +34,11 @@
   },
   "homepage": "https://countly.com/",
   "devDependencies": {
+    "@rrweb/record": "2.2.2",
     "cypress": "15.21.0",
     "cypress-localstorage-commands": "2.3.0",
     "docdash": "2.0.2",
+    "esbuild": "0.28.2",
     "jsdoc": "4.0.5"
   },
   "npmName": "countly-sdk-web",
