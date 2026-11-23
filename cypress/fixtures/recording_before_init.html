@@ -1,0 +1,46 @@
+<!-- Used in recording tests: the Session Replay recording module (modules/recording) on the page before
+     Countly.init, as its docs say, and the page's view tracked right after init.
+     ?c=<JSON> is merged into the init config; ?consent=1 gives the session_replay consent right after init;
+     ?sc=late keeps the server's settings back (the test delivers them later); ?keep=1 keeps the storage of
+     the previous page load (the tab's stream and the stored server settings). -->
+<html>
+<head>
+  <script type='text/javascript' src='../../lib/countly.js'></script>
+  <script type='module'>
+    import { queryExtractor } from '../support/integration_helper.js';
+
+    var query = queryExtractor(window.location.search);
+    var conf = query.c ? JSON.parse(decodeURIComponent(query.c)) : {};
+    if (query.keep !== "1") {
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+      // a page of its own: no upload or buffered chunk an earlier test's page left in IndexedDB
+      await new Promise((resolve) => {
+        var req = indexedDB.deleteDatabase("countly_recordings");
+        req.onsuccess = req.onerror = req.onblocked = resolve;
+      });
+    }
+    window.Countly = Countly;
+    await import('../../lib/countly_recording.js');
+    if (query.sc === "late") {
+      // the server's settings have not arrived when the page's first requests are made
+      conf.fake_request_handler = function(req) {
+        return req.functionName === "server_config" ? false : undefined;
+      };
+    }
+    Countly.init(Object.assign({
+      app_key: "YOUR_APP_KEY",
+      url: "https://your.domain.count.ly",
+      device_id: "recording-tester",
+      test_mode: true
+    }, conf));
+    if (query.consent === "1") {
+      Countly.add_consent(["session_replay"]);
+    }
+    Countly.track_pageview("landing");
+  </script>
+</head>
+<body>
+  <h1>Recording fixture, module before init</h1>
+</body>
+</html>

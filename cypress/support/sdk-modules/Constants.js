@@ -17,6 +17,8 @@ var featureEnums = {
     REMOTE_CONFIG: "remote-config",
     PUSH: "push",
     CONTENT: "content",
+    // Session Replay. Always needs an explicit add_consent, even when require_consent is off.
+    SESSION_REPLAY: "session_replay",
 };
 
 // every feature in featureEnums, alphabetically, the order Countly.features lists them in
@@ -32,7 +34,8 @@ var featureList = Object.keys(featureEnums).map(function (key) {
     [CLY]_view - "views" consent
     [CLY]_orientation - "users" consent
     [CLY]_push_action - "push" consent
-    [CLY]_action - "clicks" or "scroll" consent
+    [CLY]_action - "clicks" or "scroll" consent ("forms" for input and submit)
+    [CLY]_recording_start - "session_replay" consent
  */
 var internalEventKeyEnums = {
     NPS: "[CLY]_nps",
@@ -42,6 +45,7 @@ var internalEventKeyEnums = {
     ORIENTATION: "[CLY]_orientation",
     ACTION: "[CLY]_action",
     PUSH_ACTION: "[CLY]_push_action",
+    RECORDING_START: "[CLY]_recording_start",
 };
 
 var internalEventKeyEnumsArray = Object.values(internalEventKeyEnums);
@@ -71,6 +75,17 @@ var logLevelToWireChar = {
     "[INFO] ": "i",
     "[DEBUG] ": "d",
     "[VERBOSE] ": "v",
+};
+
+/**
+ * Maps the internal log level to the level name the log listener receives
+ */
+var logLevelToListenerName = {
+    "[ERROR] ": "error",
+    "[WARNING] ": "warning",
+    "[INFO] ": "info",
+    "[DEBUG] ": "debug",
+    "[VERBOSE] ": "verbose",
 };
 
 /**
@@ -191,6 +206,7 @@ var DeviceIdTypeInternalEnums = {
  */
 var configurationDefaultValues = {
     BEAT_INTERVAL: 500,
+    HC_COUNT_CAP: 65535,
     QUEUE_SIZE: 1000,
     FAIL_TIMEOUT_AMOUNT: 60,
     INACTIVITY_TIME: 20,
@@ -233,6 +249,8 @@ var healthCheckCounterEnum = Object.freeze({
     errorMessage: "cly_hc_error_message",
     backoffCount: "cly_hc_backoff_count",
     consecutiveBackoffCount: "cly_hc_consecutive_backoff_count",
+    methodUsage: "cly_hc_method_usage",
+    logCodes: "cly_hc_log_codes",
 });
 
 /**
@@ -333,4 +351,4 @@ var contentReservedSegmentationPrefix = "answ";
 // 17: "#fragment"
 var urlParseRE = /^(((([^:\/#\?]+:)?(?:(\/\/)((?:(([^:@\/#\?]+)(?:\:([^:@\/#\?]+))?)@)?(([^:\/#\?\]\[]+|\[[^\/\]@#?]+\])(?:\:([0-9]+))?))?)?)?((\/?(?:[^\/\?#]+\/+)*)([^\?#]*)))?(\?[^#]+)?)(#.*)?/;
 
-export { CDN, DeviceIdTypeInternalEnums, SDK_NAME, SDK_VERSION, configurationDefaultValues, contentReservedSegmentationKeys, contentReservedSegmentationPrefix, featureEnums, featureList, healthCheckCounterEnum, internalEventKeyEnums, internalEventKeyEnumsArray, logGatheringDefaultValues, logLevelEnums, logLevelToWireChar, logLineConsent, pushConstants, pushMessageTypes, pushStorageKeys, pushWorkerParams, tabHandoverTimes, urlParseRE };
+export { CDN, DeviceIdTypeInternalEnums, SDK_NAME, SDK_VERSION, configurationDefaultValues, contentReservedSegmentationKeys, contentReservedSegmentationPrefix, featureEnums, featureList, healthCheckCounterEnum, internalEventKeyEnums, internalEventKeyEnumsArray, logGatheringDefaultValues, logLevelEnums, logLevelToListenerName, logLevelToWireChar, logLineConsent, pushConstants, pushMessageTypes, pushStorageKeys, pushWorkerParams, tabHandoverTimes, urlParseRE };

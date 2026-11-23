@@ -146,6 +146,42 @@ declare module "countly-sdk-web" {
     function attempt_to_send_stored_requests(): void;
 
     /**
+     * Change the server URL. Queued and later requests go to the new URL, a request already on its way finishes at the
+     * previous one; the app key, salt and headers stay. The new server gets the push token and, while consent is required,
+     * the consent state, and the behavior settings and, with automatic remote config, remote config are fetched from it.
+     * An invalid URL is ignored with an error log. Kept in memory only: on each page, call it before track_sessions.
+     * @param {string} url - absolute http or https URL of the server, trailing "/" characters are removed
+     */
+    function change_server_url(url: string): void;
+
+    /**
+     * Change the app key. First the running view and session are ended and the pending events and user profile changes
+     * are queued, all with the previous key. Then a session begins for the new app if one was running, and the new app
+     * gets what a new server gets after change_server_url, without the previous app's remote config values. Queued
+     * requests keep their key; the device ID, consent and server URL stay. An invalid key is ignored with an error log.
+     * Kept in memory only: on each page, call it before track_sessions.
+     * @param {string} appKey - app key of the new app, not empty and not "YOUR_APP_KEY"
+     */
+    function change_app_key(appKey: string): void;
+
+    /**
+     * Discard the events and requests waiting to be sent. A request already on its way is not stopped. Timed events,
+     * the running view and pending user profile changes stay.
+     */
+    function flush_queues(): void;
+
+    /**
+     * Give every queued request the current app key, so the requests queued before change_app_key go to the new app
+     */
+    function replace_all_app_keys_in_queue_with_current_app_key(): void;
+
+    /**
+     * Remove the queued requests that have another app key than the current one, so the requests queued before
+     * change_app_key are not sent
+     */
+    function remove_different_app_keys_from_queue(): void;
+
+    /**
      * Enable web push notifications: asks for notification permission, registers the Countly service worker,
      * subscribes with the configured VAPID public key and registers the subscription with the server.
      * Call it directly from a user gesture (a click handler), not through Countly.q — Firefox and Safari
@@ -517,17 +553,34 @@ declare module "countly-sdk-web" {
       segments?: object
     ): void;
 
-    /**
-     * Track all clicks on this page
-     * @param {Object} [parent] - DOM object whose children to track, by default it is document body
-     */
-    function track_clicks(parent?: Object): void;
+    /** Frustration signals track_clicks records, each on unless set to false */
+    interface ClickTrackingOptions {
+      /** rage_click: three or more clicks within a second and 30 px */
+      rage?: boolean;
+      /** dead_click: a click on something clickable that changed nothing on the page within a second */
+      dead?: boolean;
+      /** error_click: a click followed by a JavaScript error within a second */
+      error?: boolean;
+    }
 
     /**
-     * Track all scrolls on this page
+     * Track all clicks on this page, with rage, dead and error clicks
+     * @param {Object} [parent] - DOM object whose children to track, by default it is document body
+     * @param {ClickTrackingOptions} [options] - frustration signals to record; also accepted as the only argument
+     */
+    function track_clicks(parent?: Object | ClickTrackingOptions, options?: ClickTrackingOptions): void;
+
+    /**
+     * Track all scrolls on this page: the deepest point per view, and where scrolling stopped
      * @param {Object} [parent] - DOM object whose children to track, by default it is document body
      */
     function track_scrolls(parent?: Object): void;
+
+    /**
+     * Track the fields users change and the forms they submit, never their values (needs the "forms" consent)
+     * @param {Object} [parent] - DOM object whose children to track, by default it is document body
+     */
+    function track_inputs(parent?: Object): void;
 
     /**
      * Generate custom event for all links that were clicked on this page

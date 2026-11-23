@@ -1,0 +1,38 @@
+<!-- Used in recording tests: the SDK and the Session Replay recording module (modules/recording) on one page.
+     ?c=<JSON> is merged into the init config; ?consent=1 gives the session_replay consent right after init. -->
+<html>
+<head>
+  <script type='text/javascript' src='../../lib/countly.js'></script>
+  <script type='module'>
+    import { queryExtractor } from '../support/integration_helper.js';
+
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+    var query = queryExtractor(window.location.search);
+    var conf = query.c ? JSON.parse(decodeURIComponent(query.c)) : {};
+    // the recording module attaches to the page's Countly, as it does to the SDK's script tag
+    window.Countly = Countly;
+    Countly.init(Object.assign({
+      app_key: "YOUR_APP_KEY",
+      url: "https://your.domain.count.ly",
+      device_id: "recording-tester",
+      test_mode: true
+    }, conf));
+    if (query.consent === "1") {
+      Countly.add_consent(["session_replay"]);
+    }
+    Countly.track_errors();
+    // a page of its own: no upload or buffered chunk an earlier test's page left in IndexedDB
+    await new Promise((resolve) => {
+      var req = indexedDB.deleteDatabase("countly_recordings");
+      req.onsuccess = req.onerror = req.onblocked = resolve;
+    });
+    import('../../lib/countly_recording.js');
+  </script>
+</head>
+<body>
+  <h1>Recording fixture</h1>
+  <label>Name <input id="name" type="text"></label>
+  <button id="pay" type="button">Pay now</button>
+</body>
+</html>

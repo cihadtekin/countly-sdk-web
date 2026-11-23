@@ -1,0 +1,60 @@
+<!-- Used in interaction tests: [CLY]_action clicks, frustration signals, inputs and scroll stops on one tall page -->
+<html>
+<head>
+  <script type='text/javascript' src='../../lib/countly.js'></script>
+  <script type='module'>
+
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+    window.Countly = Countly;
+    Countly.init({
+      app_key: "YOUR_APP_KEY",
+      url: "https://your.domain.count.ly",
+      test_mode: true
+    });
+    Countly.track_clicks();
+    Countly.track_inputs();
+    Countly.track_scrolls();
+    window.addEventListener("load", function () {
+      document.getElementById("works").addEventListener("click", function () {
+        var note = document.createElement("p");
+        note.textContent = "Saved";
+        document.getElementById("notes").appendChild(note);
+      });
+      document.getElementById("throws").addEventListener("click", function () {
+        setTimeout(function () { throw new Error("button failure"); }, 0);
+      });
+      document.getElementById("signup").addEventListener("submit", function (e) {
+        e.preventDefault();
+      });
+      document.querySelector("form.newsletter").addEventListener("submit", function (e) {
+        e.preventDefault();
+      });
+    });
+  </script>
+</head>
+<body style="margin:0;font-family:sans-serif">
+  <button id="works" type="button">Save</button>
+  <button id="dead" type="button">Does nothing</button>
+  <button id="throws" type="button">Breaks</button>
+  <div id="notes"></div>
+  <form id="signup">
+    <!-- a field named "id" makes the form's own `id` property that field -->
+    <input name="id" type="hidden" value="42">
+    <input id="name" name="name" type="text">
+    <input id="secret" name="secret" type="password">
+    <button id="send" type="submit">Sign up</button>
+  </form>
+  <!-- joins the signup form from outside it -->
+  <input id="nickname" name="nickname" type="text" form="signup">
+  <form class="newsletter">
+    <input id="email" name="email" type="email">
+    <select id="plan" name="plan"><option value="free">Free</option><option value="pro">Pro</option></select>
+    <label><input id="terms" name="terms" type="checkbox"> Agree</label>
+    <textarea id="note" name="note"></textarea>
+  </form>
+  <!-- in no form at all -->
+  <input id="search" name="search" type="search">
+  <div style="height:4000px">Long page</div>
+</body>
+</html>

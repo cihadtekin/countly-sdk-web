@@ -1,3 +1,23 @@
+## XX.XX.XX
+
+- Added SDK method usage and log codes to the health check.
+- Added `change_server_url` to change the server URL after init.
+- Added `change_app_key` to change the app key after init.
+- Added `flush_queues` to clear the event and request queues.
+- Added `replace_all_app_keys_in_queue_with_current_app_key` to give queued requests the current app key.
+- Added `remove_different_app_keys_from_queue` to drop queued requests with another app key.
+- Added `log_listener` init option, a function that receives every log message of the SDK and its level ("error", "warning", "info", "debug" or "verbose"), also while `debug` is off. It is called inside the SDK's own calls, so it should return quickly and must not call the SDK.
+- Added `session_replay` consent feature for Session Replay. It always needs an explicit `add_consent("session_replay")`, also when `require_consent` is off.
+- Added `track_inputs`, which records the fields users change and the forms they submit, never their values, as `[CLY]_action` `input` and `submit` events with the field's form (`form`) and type (`itype`) (needs the `forms` consent).
+- Added rage, dead and error clicks to `track_clicks`, recorded as `[CLY]_action` `rage_click`, `dead_click` and `error_click`. Each is on by default and can be turned off with `track_clicks({ rage: false })` (or `track_clicks(parent, options)`). Apps that already call `track_clicks` send these new event types after updating.
+- Added the clicked element (`sel`, `tag`, the visible label `txt` unless masked with `cly-mask`), the viewport size (`vw`, `vh`) and the scroll position (`sx`, `sy`) to `[CLY]_action` clicks. Elements inside `cly-ignore` are not tracked.
+- Added `scroll_stop` to `track_scrolls`: a `[CLY]_action` when scrolling settles after moving at least a quarter of the viewport.
+- Added the hooks the Session Replay recording module (`countly_recording.js`) uses, and the `rsid` request parameter it sets while recording. Loaded before `init`, the module attaches during `init`, so the page's first requests carry `rsid` too.
+- Improved internal logging.
+- Improved health check send count. It is now sent once per visit, when a new session begins, and once per page load only on pages that track no session.
+
+- Mitigated an issue where health check counters restarted even when it was not delivered, and what was counted while it was on its way was lost when it was.
+
 ## 26.8.1
 
 - ! Minor Breaking Change ! Remote config is now downloaded with the current remote config API (`method=rc`) by default, as `use_explicit_rc_api` now defaults to `true`. It needs Countly server 22.09 or newer; set `use_explicit_rc_api` to `false` to keep the legacy API. The values and the A/B test enrollment stay the same, except that downloading only some keys now enrolls the user only in the A/B tests that use those keys.
